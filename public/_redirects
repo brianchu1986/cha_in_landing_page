@@ -1,0 +1,7 @@
+# Preserve public URLs from the previous chaincafe.my installation.
+/contact_us              /#contact              301
+/contact_us/             /#contact              301
+/terms_and_conditions    /terms/                301
+/terms_and_conditions/   /terms/                301
+/refund_policy           /refund-policy/        301
+/refund_policy/          /refund-policy/        301
