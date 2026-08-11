@@ -16,10 +16,10 @@ The site includes the homepage, Terms & Conditions, Refund & Returns Policy, bra
 From the repository root, run:
 
 ```powershell
-python -m http.server 4173 -d public
+python -m http.server 8001 -d public
 ```
 
-Then open `http://localhost:4173/`.
+Then open `http://localhost:8001/`.
 
 Python's basic server does not apply Cloudflare's `_redirects` or `_headers`; those take effect on a Pages deployment. Visit `/terms/`, `/refund-policy/`, and `/404.html` directly during local review.
 
@@ -90,3 +90,18 @@ https://chaincafe.niagaai.my/
 ```
 
 Replace every occurrence, then test the header, hero, ordering notice, footer, mobile menu, and 404 links before publishing.
+
+## Post-launch SEO checklist
+
+After the production custom-domain cutover:
+
+1. Verify `chaincafe.my` in Google Search Console.
+2. Submit `https://chaincafe.my/sitemap.xml` in the Sitemaps report.
+3. Inspect `https://chaincafe.my/` with URL Inspection and request indexing when appropriate.
+4. Monitor indexing, crawl issues, site-name selection, and real search queries without assuming inclusion or ranking.
+5. Verify that the name, address, phone number, and opening hours match the Google Business Profile, Facebook page, and other current public listings.
+6. Add the site to Bing Webmaster Tools and submit the same sitemap. IndexNow is intentionally omitted because this small static site changes infrequently.
+7. Confirm Cloudflare preview URLs return `X-Robots-Tag: noindex`.
+8. After attaching the custom domain, use Cloudflare Bulk Redirects to send the production `*.pages.dev` hostname to `https://chaincafe.my/` while preserving the path and query string.
+
+The Terms & Conditions and Refund Policy remain publicly accessible but use `noindex, follow`; the sitemap therefore lists only the indexable homepage. The 404 page also remains `noindex`.
