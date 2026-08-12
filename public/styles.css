@@ -645,6 +645,61 @@ address strong,
   text-underline-offset: 4px;
 }
 
+.registration-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.4fr);
+  margin-top: clamp(36px, 5vw, 64px);
+  padding: clamp(30px, 5vw, 58px);
+  color: var(--white);
+  background: var(--brown);
+  gap: clamp(36px, 7vw, 92px);
+}
+
+.registration-heading h3 {
+  margin-bottom: 16px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.registration-heading > p:last-child {
+  max-width: 330px;
+  margin-bottom: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.registration-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  gap: 0 clamp(28px, 4vw, 52px);
+}
+
+.registration-details > div {
+  padding-block: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.registration-details > div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.registration-details dt {
+  margin-bottom: 9px;
+  color: var(--pink-light);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.registration-details dd {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.6;
+}
+
 .contact-section {
   position: relative;
   overflow: hidden;
@@ -1006,6 +1061,11 @@ address strong,
     max-width: 600px;
   }
 
+  .registration-card {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
   .footer-top {
     grid-template-columns: 1fr;
   }
@@ -1143,6 +1203,18 @@ address strong,
 
   .faq-number {
     margin-bottom: 24px;
+  }
+
+  .registration-details {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-details > div:nth-last-child(-n + 2) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .registration-details > div:last-child {
+    border-bottom: 0;
   }
 
   .footer-brand img {
