@@ -77,9 +77,10 @@ Assets are in `public/assets/`:
 
 - `cha-in-mark.webp`: owned Cha In character mark migrated from the current site
 - `cha-in-wordmark.webp`: owned Cha In wordmark migrated from the current site
-- `cha-in-social-card.webp`: 1200 × 630 social-sharing image
+- `cover.webp`: 1672 × 941 homepage hero image, loaded eagerly as the page's primary visual
+- `cha-in-social-card.webp`: 1200 × 630 social-sharing image used only by Open Graph and Twitter metadata
 
-The original cup/product image named `oriental_tea_cup.png` was not available, so the hero uses owned brand artwork and CSS rather than third-party photography. To add an owned product photo later, export an appropriately sized WebP without upscaling, include intrinsic dimensions in the HTML, keep it eager-loaded if it remains the hero/LCP image, and retain the original source only if future editing requires it.
+The hero uses the owned `cover.webp` product photograph with intrinsic dimensions and eager loading to minimize layout shift and support LCP performance. Keep the source image local, truthfully described, and free of third-party dependencies when replacing it.
 
 ## Changing the order destination
 
