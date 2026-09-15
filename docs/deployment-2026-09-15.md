@@ -1,5 +1,7 @@
 # Deployment and SEO audit — 15 September 2026
 
+Historical preparation record. The subsequent authenticated deployment, DNS migration and complete rollback snapshot are recorded in [the production cutover log](production-cutover-2026-09-15.md).
+
 ## Outcome
 
 Prepared and locally validated a Cloudflare Workers Static Assets configuration. **No authenticated Wrangler deployment, DNS change, Custom Domain attachment, redirect-rule change or production cutover was initiated by this agent.** After the requested Git push, the existing Workers endpoint began serving the committed source and passed remote checks. Its deployment mechanism remains unverified without account access; do not assume there is no external build integration merely because the repository has no workflow file.

@@ -160,6 +160,16 @@ def http_checks(base):
                 _, headers, _ = request(base, path, host=host)
                 require(("noindex" in headers.get("x-robots-tag", "")) == should_noindex, f"Host-specific noindex: {host}{path}")
         print("PASS staging noindex and production indexability using local Host headers")
+    if hostname == "chaincafe.my":
+        for redirect_base in ("https://www.chaincafe.my", "http://www.chaincafe.my", "http://chaincafe.my"):
+            for path in ("/", "/terms/?x=1", "/refund-policy/?x=1&source=qa%20check"):
+                status, headers, _ = request(redirect_base, path)
+                expected = CANONICAL.rstrip("/") + path
+                require(status == 301 and headers.get("location") == expected,
+                        f"Canonical host/HTTPS redirect: {redirect_base}{path}")
+                require(request(redirect_base, path, follow=True)[0] == 200,
+                        f"Canonical redirect destination: {redirect_base}{path}")
+                print(f"PASS canonical 301 with path/query preserved: {redirect_base}{path}")
 
 
 if __name__ == "__main__":
