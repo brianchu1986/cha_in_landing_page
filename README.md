@@ -1,108 +1,116 @@
 # Cha In Café 茶颖 landing site
 
-Production-ready static landing site for `chaincafe.my`. It introduces Cha In Café, directs online orders to the Niaga AI storefront, keeps local visit/contact information easy to find, and preserves important routes from the previous site.
+Static café information for **https://chaincafe.my/**. Online ordering links to **https://chaincafe.niagaai.my/**, with WhatsApp as a contact fallback.
 
-## Architecture
+## Architecture and deployment status
 
-- Plain semantic HTML and modern CSS
-- No framework, build pipeline, JavaScript dependency, analytics, cookies, backend, or environment variables
-- All deployable files live in `public/`
-- Cloudflare Pages is the intended host; GitHub is the source repository
+- Cloudflare **Workers Static Assets**, Worker name `chaincafe`, assets in `./public`.
+- Semantic HTML, WebP, local CSS and minimal vanilla JavaScript. No framework, Worker JavaScript, build step, analytics, tracking, fonts service, cookies or application environment variables.
+- `wrangler.jsonc` sets `404-page` and `auto-trailing-slash` handling. Unknown URLs must return the branded page with HTTP **404**.
+- Intended production: `chaincafe.my` → Worker Custom Domain → static assets. Canonical, social and structured-data URLs stay on `https://chaincafe.my/`.
+- `workers_dev: true` retains diagnostics; `preview_urls: false` disables additional version preview URLs. `public/_headers` sends `X-Robots-Tag: noindex` only on `chaincafe.brianchu1986.workers.dev`.
+- **Cutover is pending.** On 15 September 2026, Wrangler reported no authentication. The existing Workers URL was reachable, but the apex failed HTTPS certificate validation and used external authoritative nameservers. See [deployment audit](docs/deployment-2026-09-15.md).
+- No production route is configured yet. Add it only after inspecting account/zone/routing and passing staging checks. This repository has no automatic deployment workflow; a Git push does not establish a Worker deployment.
 
-The site includes the homepage, Terms & Conditions, Refund & Returns Policy, branded 404 page, search-engine files, security headers, and legacy redirects.
-
-## Preview locally
-
-From the repository root, run:
+## Local preview and validation
 
 ```powershell
 python -m http.server 8001 -d public
 ```
 
-Then open `http://localhost:8001/`.
+Open `http://localhost:8001/`. Python does **not** apply Cloudflare headers, redirects or branded missing-page handling. Use Wrangler on a separate port to test asset routing:
 
-Python's basic server does not apply Cloudflare's `_redirects` or `_headers`; those take effect on a Pages deployment. Visit `/terms/`, `/refund-policy/`, and `/404.html` directly during local review.
-
-## Important URLs
-
-- Canonical website: `https://chaincafe.my/`
-- Online ordering: `https://chaincafe.niagaai.my/`
-- WhatsApp: `https://wa.me/60176151036`
-- Facebook: `https://www.facebook.com/Cha.In.my/`
-
-## Cloudflare Pages configuration
-
-In the Cloudflare Dashboard:
-
-1. Open **Workers & Pages**.
-2. Choose **Create** → **Pages** → **Connect to Git**.
-3. Connect GitHub and select `brianchu1986/cha_in_landing_page`.
-4. Use these build settings:
-
-   - Production branch: `main`
-   - Framework preset: `None`
-   - Build command: `exit 0` (or leave blank if the current UI accepts it)
-   - Build output directory: `public`
-
-Every push to `main` will create a new production deployment after the Git integration is active. Pull requests and non-production branches can be used for preview deployments.
-
-## Custom-domain cutover
-
-Do not change the current live domain until the Pages preview has been visually verified.
-
-After preview approval:
-
-1. Add `chaincafe.my` as the production custom domain in the Pages project.
-2. Optionally add `www.chaincafe.my`.
-3. Configure a Cloudflare redirect from `www` to `https://chaincafe.my/`, preserving the path and query string.
-4. Configure a host-based Cloudflare redirect from the production `*.pages.dev` hostname to `https://chaincafe.my/`, also preserving the path and query string, to avoid duplicate public URLs.
-5. Verify HTTPS, the apex domain, both legacy redirects, and the canonical tags after cutover.
-
-No GitHub Pages `CNAME` file is used.
-
-## Maintaining business details
-
-Business content is maintained in:
-
-- `public/index.html`: customer-facing details and JSON-LD structured data
-- `public/terms/index.html`: published Terms & Conditions
-- `public/refund-policy/index.html`: published refund policy
-- `public/sitemap.xml`: canonical public routes
-
-When an address, phone number, or opening hour changes, update both the visible homepage content and JSON-LD in `public/index.html`. Update the policy date when legal content changes.
-
-## Images and brand assets
-
-Assets are in `public/assets/`:
-
-- `cha-in-mark.webp`: owned Cha In character mark migrated from the current site
-- `cha-in-wordmark.webp`: owned Cha In wordmark migrated from the current site
-- `cover.webp`: 1672 × 941 homepage hero image, loaded eagerly as the page's primary visual
-- `cha-in-social-card.webp`: 1200 × 630 social-sharing image used only by Open Graph and Twitter metadata
-
-The hero uses the owned `cover.webp` product photograph with intrinsic dimensions and eager loading to minimize layout shift and support LCP performance. Keep the source image local, truthfully described, and free of third-party dependencies when replacing it.
-
-## Changing the order destination
-
-The Niaga AI order URL appears in the homepage and 404 page. To change it later, search the repository for:
-
-```text
-https://chaincafe.niagaai.my/
+```powershell
+npx wrangler@latest dev --ip 127.0.0.1 --port 8787
 ```
 
-Replace every occurrence, then test the header, hero, ordering notice, footer, mobile menu, and 404 links before publishing.
+Leave the preview running and run checks in another terminal:
 
-## Post-launch SEO checklist
+```powershell
+python tools/check_site.py
+python tools/check_site.py --base-url http://127.0.0.1:8787
+node --check public/script.js
+npx wrangler@latest deploy --dry-run
+git diff --check
+```
 
-After the production custom-domain cutover:
+The checker validates source content and optionally HTTP routes, assets, security headers, canonical URLs and crawler policy. Also use an HTML conformance validator and review a browser at 360, 390, 768, 1024 and 1440 pixels, including keyboard navigation and console errors.
 
-1. Verify `chaincafe.my` in Google Search Console.
-2. Submit `https://chaincafe.my/sitemap.xml` in the Sitemaps report.
-3. Inspect `https://chaincafe.my/` with URL Inspection and request indexing when appropriate.
-4. Monitor indexing, crawl issues, site-name selection, and real search queries without assuming inclusion or ranking.
-5. Verify that the name, address, phone number, and opening hours match the Google Business Profile, Facebook page, and other current public listings.
-6. Add the site to Bing Webmaster Tools and submit the same sitemap. IndexNow is intentionally omitted because this small static site changes infrequently.
-7. Confirm Cloudflare preview URLs return `X-Robots-Tag: noindex`.
-8. After attaching the custom domain, use Cloudflare Bulk Redirects to send the production `*.pages.dev` hostname to `https://chaincafe.my/` while preserving the path and query string.
+## Deploy and attach the production domain
 
-The Terms & Conditions and Refund Policy remain publicly accessible but use `noindex, follow`; the sitemap therefore lists only the indexable homepage. The 404 page also remains `noindex`.
+1. Run `npx wrangler@latest whoami`. Stop deployment if authentication or permissions are missing. Authenticate securely outside the repository; never store deployment credentials in `.env`, `.env.example`, source, logs or Git.
+2. Inspect the existing `chaincafe` Worker and all `chaincafe.my` DNS records, Pages domains, Worker routes/Custom Domains, Page Rules, Redirect Rules and applicable Bulk Redirects. Confirm account and zone identity. Record the rollback snapshot below. Public DNS cannot reveal the complete configuration.
+3. Confirm the Worker is not already serving production traffic before the initial staging upload. Deploy the route-free configuration:
+
+   ```powershell
+   npx wrangler@latest deploy
+   ```
+
+4. Read the actual URL from Wrangler output. Expected diagnostic URL: `https://chaincafe.brianchu1986.workers.dev/`. Verify it with the checker and browser:
+
+   ```powershell
+   python tools/check_site.py --base-url https://chaincafe.brianchu1986.workers.dev
+   ```
+
+5. Confirm an active Cloudflare zone and preserve existing DNS, including mail and verification records. The observed external nameservers need investigation; a nameserver migration requires a complete zone inventory and migration plan. Do not blindly replace apex records or change nameservers.
+6. After staging passes and any conflict has a safe rollback, add this top-level Wrangler field and redeploy:
+
+   ```json
+   "routes": [
+     { "pattern": "chaincafe.my", "custom_domain": true }
+   ]
+   ```
+
+   Cloudflare Custom Domains manage the necessary DNS record and certificate. An existing CNAME may conflict: replace only the exact conflicting record when safe. Never redirect `chaincafe.my` to `workers.dev`.
+7. `www.chaincafe.my` currently exists. Preserve support with a hostname-specific **301** to `https://chaincafe.my/<same path>`, preserving query strings, after the apex works. Configure this in the inspected hosting/Cloudflare routing state; path-only `_redirects` rules are not hostname routing.
+8. Verify production using the checker, `curl -I`, `curl -L` and a browser. Keep staging noindex. Production homepage must have neither an HTML nor HTTP `noindex` directive.
+
+## Post-deployment checks
+
+```powershell
+python tools/check_site.py --base-url https://chaincafe.my
+curl.exe -I https://chaincafe.my/
+curl.exe -L https://chaincafe.my/contact_us
+curl.exe -I https://chaincafe.brianchu1986.workers.dev/
+curl.exe -I "https://www.chaincafe.my/terms/?source=verification"
+```
+
+Check `/`, `/terms/`, `/refund-policy/`, `/robots.txt`, `/sitemap.xml`, all six legacy redirects (with and without trailing slashes), and `/nonexistent-test-path`. Confirm valid HTTPS, 200 pages/assets, actual 404 status, security headers, canonical URLs and staging noindex. Cloudflare applies redirects before `_headers`; inspect their destinations too.
+
+Review mobile navigation, keyboard focus, WhatsApp, telephone, directions and Facebook links, image loading including `cover.webp`, JSON-LD and the console. Re-test Niaga separately; a reachable storefront does not prove successful checkout. Run Lighthouse against production once valid HTTPS and the intended site are available; report actual measurements.
+
+## Rollback
+
+Before any production change, save a timestamped snapshot outside `public/`, without credentials:
+
+- Relevant DNS hostname, type, content/target, TTL and proxy state.
+- Nameservers, previous origin/destination, rule definitions and enabled state.
+- Pages domains, Worker routes/Custom Domains and current deployment/version.
+- Exact proposed changes and their inverses, including DNS record replacements.
+
+If verification fails, restore only the exact changed association/rule/record when the reversal is unambiguous. Worker version rollback restores assets/code; it does not restore DNS or redirect rules. Stop if restoration is ambiguous. The audit's public observations are **not** a complete rollback snapshot. No Cloudflare or production changes were made during this unauthenticated preparation.
+
+## Content, assets and indexing
+
+- Business facts and JSON-LD live in `public/index.html`; keep name, address, phone and daily 12:00–21:30 hours consistent.
+- `CHA IN F & B PLT`, `LLP0017890-LGN`, effective registration **1 October 2018**, describe the legal operator. The date is not a café opening/founding date and is not used as `foundingDate`.
+- Preserve `#cafe`, `#website` and `#webpage` IDs. Add only verified facts; do not add unsupported ratings, prices, cuisine, delivery/halal claims or FAQ schema.
+- `public/robots.txt` explicitly allows OAI-SearchBot and allows Googlebot/Bingbot through the wildcard group. GPTBot policy is unchanged. Robots permission does not prove that a firewall allows real crawlers.
+- The sitemap lists only the indexable canonical homepage. Update `lastmod` only for significant content, link or structured-data changes.
+- Terms, refund policy and the 404 template retain `noindex, follow`. They remain crawlable so engines can read that directive.
+- No `llms.txt`, hidden AI-only content or IndexNow service is required for this implementation.
+- Local WebP assets: `cha-in-mark.webp` (192 × 192), `cha-in-wordmark.webp`, `cover.webp` (1672 × 941), `cha-in-social-card.webp` (1200 × 630). The hero has intrinsic dimensions and high fetch priority.
+- Ordering links occur on all four HTML pages. Search for `https://chaincafe.niagaai.my/` when maintaining the destination. Keep WhatsApp fallback at `https://wa.me/60176151036`.
+
+## Search engine follow-up
+
+After the real production domain passes verification:
+
+1. Add/verify the `chaincafe.my` **domain property** in Google Search Console.
+2. Submit `https://chaincafe.my/sitemap.xml`.
+3. Inspect `https://chaincafe.my/` and request indexing when appropriate.
+4. Monitor indexing, crawl failures, site-name selection and actual query data.
+5. Verify the site in Bing Webmaster Tools and submit the same sitemap.
+6. Compare business details with the Google Business Profile and Facebook listing.
+
+No Search Console/Bing account verification has been performed. Indexing, inclusion in AI answers and ranking are not guaranteed. First-party references are linked in the deployment audit.
