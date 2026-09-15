@@ -4,7 +4,7 @@
 
 Production is live at **https://chaincafe.my/** through Worker `chaincafe`, with valid HTTPS and canonical 301 redirects preserving path/query. Cloudflare is Active. Staging remains noindex. Production HTTP, source/SEO and five-width browser checks passed. Lighthouse performance scored **100 desktop / 99 mobile**, with CLS 0.
 
-Google's Domain Property is verified, the sitemap reports Success, live inspection passed, and one indexing request was accepted. Bing DNS verification completed and its sitemap is Processing. Google Business Profile's daily hours are published; the apex website edit is pending review. These search-engine processing/review states do not prevent the verified deployment from serving production.
+Google's Domain Property is verified, the sitemap reports Success, live inspection passed, and one indexing request was accepted. Bing DNS verification completed and its sitemap also reports Success with one discovered URL. Google Business Profile's daily hours and apex website are published. Search index inclusion and Google's final canonical selection remain unconfirmed.
 
 The dated sections below retain the original observations and transition states for rollback/audit purposes; later results supersede earlier pending observations.
 
@@ -68,7 +68,7 @@ Legacy redirects are the six entries in `public/_redirects`: contact paths to `/
 
 Authenticated management access showed the verified **Cha In 茶穎** listing. Its phone matches `017-6151036`; the address identifies the same No. 13, Jalan Kota 7/1 location, with formatting differences. The existing name uses traditional Chinese and omits “Café”; it was preserved. Category, ownership, reviews, descriptions and other profile settings were left unchanged.
 
-The initial website field pointed to the known Facebook page. After production verification, submitted `https://chaincafe.my/` as the website. The editor explicitly shows the old Facebook URL under Current and the apex URL under Pending, with Google's review notice. The Facebook social profile remains intact.
+The initial website field pointed to the known Facebook page. After production verification, submitted `https://chaincafe.my/` as the website. Google initially showed the old Facebook URL under Current and the apex URL under Pending. At approximately 08:05 UTC, a fresh editor session displayed **https://chaincafe.my/** as the current website with no pending notice, confirming publication. The Facebook social profile remains intact.
 
 Tuesday was marked Closed, contrary to the user's explicitly supplied daily 12:00–21:30 schedule. Submitted only Tuesday 12:00–21:30; the editor confirmed all other days unchanged. Google initially displayed the edit as pending review. By the final comparison, the pending notice had disappeared and the current Hours section showed **all seven days 12:00–21:30**, confirming publication.
 
@@ -124,7 +124,7 @@ After Search Console succeeded, attempted its preferred Google import flow. Goog
 
 Added only `27b20dc7e94e38866444e1d9575fd17c.chaincafe.my` → `verify.bing.com`, DNS-only, Auto/300 seconds. Both the saved DNS table and an authoritative query confirmed it. Bing verification completed, `chaincafe.my` became available in the website selector, and its authenticated dashboard and Sitemaps section were accessible.
 
-Submitted `https://chaincafe.my/sitemap.xml` once. The resulting table shows one row, submitted **15 September 2026**, status **Processing**, with no crawl date or discovered-URL count yet. Processing is not a crawl/indexing success claim. No IndexNow infrastructure or extra URL submissions were added.
+Submitted `https://chaincafe.my/sitemap.xml` once. The resulting table initially showed Processing. A fresh Sitemaps page at approximately 08:04 UTC showed **Success**, submitted and last crawled **15 September 2026**, with **1 discovered URL**. This confirms sitemap processing, not search index inclusion. No IndexNow infrastructure or extra URL submissions were added.
 
 ## DNS after cutover and verification
 
@@ -149,6 +149,8 @@ The only runtime configuration change is the apex Custom Domain route in `wrangl
 Validation commands used: `python tools/check_site.py`, local/staging/production `--base-url` variants, `node --check public/script.js`, `git diff --check`, authenticated `npx.cmd --yes wrangler@latest whoami`, `deploy --dry-run`, and `deploy`. DNS verification used read-only `nslookup`; TLS/endpoint checks used `curl.exe` with certificate verification enabled. Browser checks covered dashboards, five viewport widths, navigation, legal pages, links, image loading and console output. Four HTML documents passed the earlier HTML conformance check without errors or warnings.
 
 Required release sequence: inspect status/diff and credentials scope, `git add -A`, commit `feat: complete Cha In production deployment`, `git fetch origin`, `git rebase origin/main`, then `git push origin HEAD:main` without force. Verify the connected Cloudflare build and production/staging responses after that push. The final task handoff records the resulting commit, push and post-push validation outcomes; this avoids placing a self-referential release hash in its own commit.
+
+The first completion commit **92293545abcd1d2860124985dfe1be0537c313bf** pushed successfully to `main` without conflicts. Cloudflare build **6906a15d-d338-4213-aad6-c40e79c4882c**, displaying that exact commit and subject, completed successfully in **28 seconds**. Wrangler confirmed its deployment at **08:02:59 UTC**, version **5667b921-c0ee-41ba-9201-55159f647c5f**, receiving 100% of traffic. Full production and staging HTTP checks passed again afterward. The production browser retained its canonical, one H1, loaded hero and clean warning/error console. Production robots.txt matched the repository byte for byte. The subsequent documentation update records Bing's completed processing and Google's published website edit, which became available after the first push.
 
 ## Current first-party references
 
