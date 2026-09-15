@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Prepared and locally validated a Cloudflare Workers Static Assets configuration. **No Worker deployment, DNS change, Custom Domain attachment, redirect-rule change or production cutover was performed.**
+Prepared and locally validated a Cloudflare Workers Static Assets configuration. **No authenticated Wrangler deployment, DNS change, Custom Domain attachment, redirect-rule change or production cutover was initiated by this agent.** After the requested Git push, the existing Workers endpoint began serving the committed source and passed remote checks. Its deployment mechanism remains unverified without account access; do not assume there is no external build integration merely because the repository has no workflow file.
 
 Wrangler **4.131.2** reported: `You are not authenticated. Please run wrangler login.` Deployment stopped as requested. No credentials were requested, printed or added to the application. The initial npm certificate-chain error was resolved by using Node's system certificate store (`NODE_OPTIONS=--use-system-ca` for the command process); TLS verification remained enabled. The older cached Wrangler 4.125.0 also reported no authentication before the latest version was installed successfully.
 
@@ -49,7 +49,7 @@ There is no complete, safe cutover rollback snapshot yet. No rollback was needed
 | Crawl policy | Existing OAI-SearchBot and wildcard Allow rules retained. Googlebot/Bingbot allowed; GPTBot policy unchanged. |
 | Sitemap | Homepage only, canonical apex; lastmod updated from 2026-08-11 to 2026-09-15 for metadata/link changes. |
 | Legal / 404 indexing | Existing `noindex, follow` retained. No production-wide noindex. |
-| Duplicate content | New exact-host workers.dev noindex rule is locally verified but **not live**. Apex HTTPS and www routing remain launch blockers. |
+| Duplicate content | Exact-host workers.dev noindex rule passed local tests and became live after the Git push. Apex HTTPS and www routing remain launch blockers. |
 | Unsupported claims | No ratings, reviews, founding date, cuisine, prices, offers, delivery or halal claims added. |
 | AI-specific files | No llms.txt, hidden AI content, doorway pages or IndexNow infrastructure added. |
 
@@ -61,7 +61,7 @@ Production routes are deliberately absent while authentication, zone state and s
 
 ## Existing remote Worker baseline
 
-URL inspected: **https://chaincafe.brianchu1986.workers.dev/**. This is a pre-existing endpoint, not a deployment made in this task.
+URL inspected: **https://chaincafe.brianchu1986.workers.dev/**. This is a pre-existing endpoint. The following table records its state **before the Git push**.
 
 | Requests | Result |
 | --- | --- |
@@ -78,7 +78,20 @@ URL inspected: **https://chaincafe.brianchu1986.workers.dev/**. This is a pre-ex
 | Browser | Homepage/hero render; JSON-LD parses; no captured warning/error logs on homepage inspection |
 | Googlebot / Bingbot / OAI-SearchBot user-agent requests | 200 from this connection; this is not verification from actual crawler IP ranges |
 
-The remote sitemap still has `2026-08-11`. New source changes, including noindex, have not been deployed. Staging is **not cleared for cutover**.
+Before the push, the remote sitemap had `2026-08-11`, and the new source/noindex rule was absent.
+
+## Remote update observed after Git push
+
+Implementation commit `d5b313c25b1afc0a0ce910f171cc66b8dc955871` was pushed successfully to `origin/main` after a conflict-free fetch/rebase. A subsequent HEAD response showed a changed ETag and **`X-Robots-Tag: noindex`**. The full checker then passed against the real Workers URL:
+
+- All four served HTML documents, including the missing-page body, exactly matched the committed local source.
+- Homepage/legal/robots/sitemap/CSS/JS/images returned 200; the nonexistent path returned 404.
+- All six legacy redirects returned the expected 301 and followed to 200.
+- All checked asset/page responses carried staging noindex and the five security headers.
+- Canonicals and sitemap URLs retained `chaincafe.my`; the current sitemap now has `2026-09-15`.
+- Browser reload showed the new site name and refund link, a loaded hero, working mobile menu and no captured homepage warning/error logs. The remote page was inspected at actual 360- and 1280-pixel widths; the complete five-width review below was local.
+
+The endpoint is now serving the implementation, but no authenticated build/deployment/version record was available to identify how it updated. The requested push preceded the update; that observation alone does not prove the deployment trigger. No authenticated `wrangler deploy` was run. Production cutover remains blocked by authentication, zone/routing inventory and apex TLS failure, which was rechecked after the update.
 
 ## Production and ordering endpoints
 
@@ -106,14 +119,14 @@ WhatsApp, Google Maps directions and Facebook links resolved to HTTP 200. Teleph
 
 ## Commands and next operator steps
 
-Commands included `git status`, `git log --oneline -10`, `git remote -v`, `git rev-parse HEAD`, repository/ancestor instruction checks, source reads, `Resolve-DnsName`, `curl -I` / followed GETs, `npx wrangler@latest whoami`, `npm view wrangler version`, `npx wrangler@latest deploy --dry-run`, Python and Wrangler preview commands, source/HTTP checker, Nu validation, JSON/XML/schema parsing, `node --check`, image/payload inspection, secret-pattern scan and `git diff --check` / `git diff`. Git commit/rebase/push results are reported in the final handoff.
+Commands included `git status`, `git log --oneline -10`, `git remote -v`, `git rev-parse HEAD`, repository/ancestor instruction checks, source reads, `Resolve-DnsName`, `curl -I` / followed GETs, `npx wrangler@latest whoami`, `npm view wrangler version`, `npx wrangler@latest deploy --dry-run`, Python and Wrangler preview commands, source/HTTP checker, Nu validation, JSON/XML/schema parsing, `node --check`, image/payload inspection, secret-pattern scan and `git diff --check` / `git diff`. The remote checker was also run successfully after the push. Git commit/rebase/push results are reported in the final handoff.
 
 Next steps, in order:
 
 1. Establish secure Wrangler authentication and unambiguous account/zone access.
 2. Inventory the external DNS zone, existing Cloudflare routing and Worker associations; capture a complete rollback snapshot.
 3. Resolve Cloudflare zone readiness without disturbing unrelated services or DNS records.
-4. Deploy this source to the confirmed Worker without moving production; verify the emitted URL and live staging noindex.
+4. Inspect the build/deployment integration and confirm the existing Worker version/configuration corresponds to this source. It already passes public HTTP checks; if a further staging deploy is needed, keep production routing unchanged and reverify the emitted URL and noindex.
 5. After every staging check passes, attach the apex as the Worker Custom Domain and verify HTTPS and all production checks. Then preserve www through a 301 with path/query retention.
 6. Verify a Google Search Console domain property; submit `https://chaincafe.my/sitemap.xml`; inspect the homepage; request indexing when appropriate; monitor indexing and query data. Also verify Bing Webmaster Tools and submit the sitemap.
 7. Run production Lighthouse and compare Google Business Profile/Facebook business details. No Search Console/Bing account integration was available for this task.

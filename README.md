@@ -9,7 +9,7 @@ Static café information for **https://chaincafe.my/**. Online ordering links to
 - `wrangler.jsonc` sets `404-page` and `auto-trailing-slash` handling. Unknown URLs must return the branded page with HTTP **404**.
 - Intended production: `chaincafe.my` → Worker Custom Domain → static assets. Canonical, social and structured-data URLs stay on `https://chaincafe.my/`.
 - `workers_dev: true` retains diagnostics; `preview_urls: false` disables additional version preview URLs. `public/_headers` sends `X-Robots-Tag: noindex` only on `chaincafe.brianchu1986.workers.dev`.
-- **Cutover is pending.** On 15 September 2026, Wrangler reported no authentication. The existing Workers URL was reachable, but the apex failed HTTPS certificate validation and used external authoritative nameservers. See [deployment audit](docs/deployment-2026-09-15.md).
+- **Cutover is pending.** On 15 September 2026, Wrangler reported no authentication. After the Git push, the Workers URL began serving the new source and passed remote checks, including staging noindex. The deployment mechanism is unverified. The apex still failed HTTPS certificate validation and used external authoritative nameservers. See [deployment audit](docs/deployment-2026-09-15.md).
 - No production route is configured yet. Add it only after inspecting account/zone/routing and passing staging checks. This repository has no automatic deployment workflow; a Git push does not establish a Worker deployment.
 
 ## Local preview and validation
@@ -88,7 +88,7 @@ Before any production change, save a timestamped snapshot outside `public/`, wit
 - Pages domains, Worker routes/Custom Domains and current deployment/version.
 - Exact proposed changes and their inverses, including DNS record replacements.
 
-If verification fails, restore only the exact changed association/rule/record when the reversal is unambiguous. Worker version rollback restores assets/code; it does not restore DNS or redirect rules. Stop if restoration is ambiguous. The audit's public observations are **not** a complete rollback snapshot. No Cloudflare or production changes were made during this unauthenticated preparation.
+If verification fails, restore only the exact changed association/rule/record when the reversal is unambiguous. Worker version rollback restores assets/code; it does not restore DNS or redirect rules. Stop if restoration is ambiguous. The audit's public observations are **not** a complete rollback snapshot. No DNS or production-routing changes were initiated during this preparation. The Workers endpoint updated after the Git push through an unverified deployment mechanism.
 
 ## Content, assets and indexing
 
